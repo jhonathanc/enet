@@ -6,7 +6,9 @@
 
 #include <sys/types.h>
 #include <sys/socket.h>
+#ifndef __lv2ppu__
 #include <sys/ioctl.h>
+#endif
 #include <sys/time.h>
 #include <netinet/tcp.h>
 #include <netdb.h>
@@ -303,7 +305,9 @@ enet_socket_set_option (ENetSocket socket, ENetSocketOption option, int value)
     switch (option)
     {
         case ENET_SOCKOPT_NONBLOCK:
-#ifdef HAS_FCNTL
+#ifdef __lv2ppu__
+            result = setsockopt (socket, SOL_SOCKET, SO_NBIO, & value, sizeof (value));
+#elif defined(HAS_FCNTL)
             result = fcntl (socket, F_SETFL, (value ? O_NONBLOCK : 0) | (fcntl (socket, F_GETFL) & ~O_NONBLOCK));
 #else
             result = ioctl (socket, FIONBIO, & value);
